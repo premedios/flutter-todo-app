@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_todo_app/Domain/Database/database.dart';
 import 'package:flutter_todo_app/Views/home.dart';
 
+final AppDatabase database = AppDatabase();
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
