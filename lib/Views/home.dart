@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' as drift;
+import 'package:flutter_todo_app/Views/todo_item_entry_dialog.dart';
 import 'package:flutter_todo_app/main.dart';
 import 'package:flutter_todo_app/Domain/Database/database.dart';
 import 'package:flutter/material.dart';
@@ -27,129 +28,31 @@ class _HomeState extends State<Home> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: 500,
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
-            ),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Compact header
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: Text('Add New Task',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+        return TodoItemEntryDialog(
+          onConfirm: (String title, String content) async {
+            try {
+              await database.into(database.todoItems).insert(
+                    TodoItemsCompanion.insert(
+                      title: taskTitle,
+                      content: taskContent,
                     ),
-                    const Divider(height: 1),
-                    // Scrollable form area
-                    Flexible(
-                      child: ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                        shrinkWrap: true,
-                        children: [
-                          TextField(
-                            controller: titleTextFieldController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter task title',
-                              isDense: true, // More compact input
-                              contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            ),
-                            onChanged: (value) {
-                              taskTitle = value;
-                            },
-                            autofocus: true,
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: contentTextFieldController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter task content',
-                              isDense: true, // More compact input
-                              contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            ),
-                            onChanged: (value) {
-                              taskContent = value;
-                            },
-                            maxLines: 3,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Action buttons
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              if ((taskTitle.isNotEmpty &&
-                                      taskTitle.length >= 6) &&
-                                  taskContent.isNotEmpty) {
-                                try {
-                                  await database
-                                      .into(database.todoItems)
-                                      .insert(
-                                        TodoItemsCompanion.insert(
-                                          title: taskTitle,
-                                          content: taskContent,
-                                        ),
-                                      );
+                  );
 
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('Task added successfully')),
-                                    );
-                                    Navigator.pop(context);
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('Failed to add task: $e')),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                            child: const Text('Add'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Task added successfully')),
+                );
+                Navigator.pop(context);
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to add task: $e')),
+                );
+              }
+            }
+            Navigator.of(context).pop();
+          },
         );
       },
     );
@@ -178,8 +81,12 @@ class _HomeState extends State<Home> {
             itemCount: todoItems.length,
             itemBuilder: (context, index) {
               return TodoListItem(
-                  title: todoItems[index].title,
-                  content: todoItems[index].content);
+                title: todoItems[index].title,
+                content: todoItems[index].content,
+                onSelected: (value) {
+                  logger.d(value);
+                },
+              );
             },
           );
         },

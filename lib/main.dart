@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_todo_app/Domain/Database/database.dart';
 import 'package:flutter_todo_app/Views/home.dart';
+import 'package:logger/logger.dart';
 
 final AppDatabase database = AppDatabase();
+final Logger logger = Logger();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
